@@ -41,7 +41,7 @@ class Extractor:
                 EC.visibility_of_all_elements_located((By.XPATH, '//a[@data-js-aid="jobID"]'))
             )
 
-            for i in range(4):#len(jobs)):
+            for i in range(len(jobs)):  # len(jobs)):
                 job = WebDriverWait(self.driver, 100).until(
                     EC.visibility_of_all_elements_located((By.XPATH, '//a[@data-js-aid="jobID"]'))
                 )
@@ -66,28 +66,42 @@ class Extractor:
                 except NoSuchElementException:
                     salary = None
 
+                # Safely access elements in employment_info
+                if len(employment_info) >= 2:
+                    company_info = employment_info[-1].text
+                    employment_type = employment_info[-2].text
+                elif len(employment_info) == 1:
+                    company_info = employment_info[0].text
+                    employment_type = None  # Or provide some default value
+                else:
+                    company_info = None
+                    employment_type = None
+
                 job_details = {
                     'job_title': job[i].text,
-                    'Country': location[1].text if len(location) > 1 else 'Unknown',
-                    'city': location[0].text,
+                    'country': location[1].text if len(location) > 1 else location[0].text if len(location) > 0 else 'Unknown',
+                    'city': location[0].text if len(location) > 1 else None,
                     'salary': salary,
                     'company': company_name.text,
-                    'company_info': employment_info[-1].text,
-                    'employment_type': employment_info[-2].text,
+                    'company_info': company_info,
+                    'employment_type': employment_type,
                     'job_url': job_url
                 }
-
                 all_jobs.append(job_details)
                 print(job_details)
+
 
                 # Close the job view
                 WebDriverWait(self.driver, 100).until(
                     EC.element_to_be_clickable((By.CLASS_NAME, "icon.is-times.has-pointer.t-mute.m0"))
                 ).click()
+            #break
+        #self.driver.quit()
+        #return all_jobs
 
-            break
-        return all_jobs
-'''   
+
+
+
             try:
                 next_button = WebDriverWait(self.driver, 100).until(
                     EC.visibility_of_element_located((By.CSS_SELECTOR, ".pagination-next a"))
@@ -102,6 +116,7 @@ class Extractor:
                 break  # Exit the loop when no more pages are available
 
         self.driver.quit()
-        '''
+        return all_jobs
+
 
 

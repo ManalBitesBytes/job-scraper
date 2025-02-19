@@ -13,32 +13,37 @@ class Transformer:
         # Use regular expression to find the jobId pattern in the URL string
         match = re.search(r'jobId=(\d+)', job_url)
         if match:
-            print(match.group(1))
+            #print(match.group(1))
             return match.group(1)  # Return the jobId if found
         return None  # Return None if no jobId is found
 
     def parse_company_info(self, company_info):
         """Splits company_info into company size and industry."""
         if company_info:
-            parts = company_info.split(' · ')
-            if len(parts) == 2:
-                company_size = parts[0]
-                industry = parts[1]
-                print(company_size, industry)
-                return company_size, industry
+            if ' . ' in company_info:
+                parts = company_info.split(' · ')
+                if len(parts) == 2:
+                    company_size = parts[0]
+                    industry = parts[1]
+                    #print(company_size, industry)
+                    return company_size, industry
+            else:
+                return None, company_info
         return None, None
 
     def parse_employment_type(self, employment_type):
         """Categorizes the employment type."""
-        employment_type = employment_type.lower()
-        if 'full time' in employment_type:
-                return 'Full Time'
-        elif 'contract' in employment_type:
-                return 'Contractor'
-        elif 'part time' in employment_type:
-                return 'Part Time'
-        elif 'temporary' in employment_type:
-                return 'Temporary'
+        if employment_type:
+            employment_type = employment_type.lower()
+            if 'full time' in employment_type:
+                    return 'Full Time'
+            elif 'contract' in employment_type:
+                    return 'Contractor'
+            elif 'part time' in employment_type:
+                    return 'Part Time'
+            elif 'temporary' in employment_type:
+                    return 'Temporary'
+        return None
 
     def clean_job_title(self, job_title):
         """Cleans the job title by removing any '-' and text after it."""
@@ -49,7 +54,7 @@ class Transformer:
             else:
                 cleaned_title = job_title
 
-            print(f"Cleaned job title: {cleaned_title}")  # Debug print
+            #print(f"Cleaned job title: {cleaned_title}")  # Debug print
             return cleaned_title
         return None
 
@@ -66,7 +71,7 @@ class Transformer:
 
     def transform(self, record):
         if not record.get('job_title'):  # Skip records with no job title
-            return None
+            return {}
         """Applies all transformations and returns a cleaned dictionary."""
         job_url = record.get('job_url')
         job_id = self.parse_job_id(job_url)
@@ -84,15 +89,15 @@ class Transformer:
 
         transformed_data = {
             'job_title': job_title,
-            'country': record.get('Country'),
+            'country': record.get('country'),
             'city': record.get('city'),
             'salary_max': salary_max,
             'salary_min': salary_min,
-            'company': record.get('company'),
-            'company_size': company_size,
-            'industry': industry,
             'employment_type': employment_type,
             'job_url': job_url,
-            'job_id': job_id
+            'job_id': job_id,
+            'company': record.get('company'),
+            'company_size': company_size,
+            'industry': industry
         }
         return transformed_data
